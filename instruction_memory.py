@@ -167,6 +167,7 @@ class InstructionMemory(QObject):
      if register_name_1 in self.registers and register_name_2 in self.registers:
         value_1 = self.registers[register_name_1]
         value_2 = self.registers[register_name_2]
+        
         # Değerleri topla
         result = value_1 + value_2
         # Sonucu ilk registera yaz
@@ -179,15 +180,16 @@ class InstructionMemory(QObject):
         print("Hata: Geçersiz register adı.")
         
     def sub(self,operands):
+     register_name_result = operands[0].strip()
+     register_name_1 = operands[1].strip()
+     register_name_2 = operands[2].strip()
      
-     register_name_1 = operands[0].strip()
-     register_name_2 = operands[1].strip()
-     register_name_result = operands[2].strip()
 
     # İlk iki registerdan değerleri al
      if register_name_1 in self.registers and register_name_2 in self.registers:
         value_1 = self.registers[register_name_1]
         value_2 = self.registers[register_name_2]
+        print("SUB FONK DEĞERLERİ ", value_1, value_2)
         # Değerleri topla
         result = (int(value_1) - int(value_2))
         # Sonucu ilk registera yaz
@@ -199,7 +201,88 @@ class InstructionMemory(QObject):
      else:
         print("Hata: Geçersiz register adı.")
         pass
+    def logical_and(self, operands):
+     register_name_result = operands[0].strip()
+     register_name_1 = operands[1].strip()
+     register_name_2 = operands[2].strip()
+
+    # İlk iki registerdan değerleri al
+     if register_name_1 in self.registers and register_name_2 in self.registers:
+        value_1 = self.registers[register_name_1]
+        value_2 = self.registers[register_name_2]
         
+        # Mantıksal AND işlemi yap
+        result = value_1 & value_2
+        # Sonucu ilk registera yaz
+        if register_name_result in self.registers:
+            self.registers[register_name_result] = result
+            print(f"{register_name_result} register'ına {register_name_1} ve {register_name_2} registerlarının mantıksal AND'i olan {result} değeri yazıldı.")
+        else:
+            print(f"Hata: {register_name_result} geçersiz bir register adı.")
+     else:
+        print("Hata: Geçersiz register adı.")
+
+    def logical_or(self, operands):
+     register_name_result = operands[0].strip()
+     register_name_1 = operands[1].strip()
+     register_name_2 = operands[2].strip()
+
+    # İlk iki registerdan değerleri al
+     if register_name_1 in self.registers and register_name_2 in self.registers:
+        value_1 = self.registers[register_name_1]
+        value_2 = self.registers[register_name_2]
+        
+        # Mantıksal OR işlemi yap
+        result = value_1 | value_2
+        # Sonucu ilk registera yaz
+        if register_name_result in self.registers:
+            self.registers[register_name_result] = result
+            print(f"{register_name_result} register'ına {register_name_1} ve {register_name_2} registerlarının mantıksal OR'u olan {result} değeri yazıldı.")
+        else:
+            print(f"Hata: {register_name_result} geçersiz bir register adı.")
+     else:
+        print("Hata: Geçersiz register adı.")
+
+    def set_less_than(self, operands):
+     register_name_result = operands[0].strip()
+     register_name_1 = operands[1].strip()
+     register_name_2 = operands[2].strip()
+
+    # İlk iki registerdan değerleri al
+     if register_name_1 in self.registers and register_name_2 in self.registers:
+        value_1 = self.registers[register_name_1]
+        value_2 = self.registers[register_name_2]
+        
+        # Küçüklük karşılaştırması yap
+        result = 1 if value_1 < value_2 else 0
+        # Sonucu ilk registera yaz
+        if register_name_result in self.registers:
+            self.registers[register_name_result] = result
+            print(f"{register_name_result} register'ına {register_name_1} ve {register_name_2} registerlarının küçüklük karşılaştırması sonucu olan {result} değeri yazıldı.")
+        else:
+            print(f"Hata: {register_name_result} geçersiz bir register adı.")
+     else:
+        print("Hata: Geçersiz register adı.")
+
+    def set_less_than_immediate(self, operands):
+     register_name_result = operands[0].strip()
+     register_name_1 = operands[1].strip()
+     immediate = int(operands[2].strip())
+
+    # İlk registerın değerini al
+     if register_name_1 in self.registers:
+        value_1 = self.registers[register_name_1]
+        
+        # Küçüklük karşılaştırması yap
+        result = 1 if value_1 < immediate else 0
+        # Sonucu ilk registera yaz
+        if register_name_result in self.registers:
+            self.registers[register_name_result] = result
+            print(f"{register_name_result} register'ına {register_name_1} ve {immediate} değerlerinin küçüklük karşılaştırması sonucu olan {result} değeri yazıldı.")
+        else:
+            print(f"Hata: {register_name_result} geçersiz bir register adı.")
+     else:
+        print("Hata: Geçersiz register adı.")    
     def jump(self, address):
     # pc'yi yeni adrese ayarla
      self.pc = address

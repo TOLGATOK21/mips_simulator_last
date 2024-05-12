@@ -220,6 +220,12 @@ class Ui_MainWindow(object):
         self.pushButton.clicked.connect(self.toggle_theme)
         self.runButton.clicked.connect(self.data_process)
         self.stepButton.clicked.connect(self.instruction_memory.next_step)
+        
+        self.resetButton = QtWidgets.QPushButton(self.centralwidget)
+        self.resetButton.setGeometry(QtCore.QRect(500, 20, 101, 41))
+        self.resetButton.setObjectName("resetButton")
+        self.resetButton.setText("Reset")
+        self.resetButton.clicked.connect(self.reset_program)
        
         # stepButton'a tıklandığında next_step metodunu çağır
         
@@ -235,7 +241,17 @@ class Ui_MainWindow(object):
      code_lines = self.code_input.text().split('\n')
 
     # .data ve .text bölümlerini ayır
+     data_section = False
+     text_section = False
      for line in code_lines:
+        # Boş satırları atla
+        if not line.strip():
+            continue
+        # Yorum satırlarını atla
+        if line.strip().startswith('#'):
+            continue
+        # Yorum kısmını ayır
+        line = line.split('#')[0].strip()
         if line.strip() == '.data':
             data_section = True
             text_section = False
@@ -251,10 +267,16 @@ class Ui_MainWindow(object):
      for data_line in data_lines:
         self.data_memory.process_data_section(data_line)
 
+    # Main etiketini ekleyelim
+     if not text_lines or text_lines[0] != 'main:':
+        text_lines.insert(0, 'main:')
+
     # .text bölümünü işle
      for text_line in text_lines:
         self.instruction_memory.process_text_section(text_line)
-        
+
+
+
                 
     def update_table(self):
          for row, (address, value) in enumerate(self.data_memory.memory.items()):
@@ -319,6 +341,39 @@ class Ui_MainWindow(object):
         self.register_table.setItem(row, 0, item_register_name)
         self.register_table.setItem(row, 1, item_value)
         row += 1
+        
+        
+#-----------------RESET------------------------------------------------------------------      
+    def reset_program(self):
+    # Yeni bir QApplication oluştur
+     self.app = QtWidgets.QApplication([])
+
+    # Yeni bir QMainWindow oluştur
+     self.MainWindow = QtWidgets.QMainWindow()
+
+    # Ui_MainWindow sınıfından bir örnek oluştur ve yeni ana pencereye yerleştir
+     self.ui = Ui_MainWindow()
+     self.ui.setupUi(self.MainWindow)
+
+    # Yeni ana pencereyi göster
+     self.MainWindow.show()
+
+    # Mevcut ana pencereyi kapat
+     MainWindow.close()
+
+    # Tabloları sıfırla
+     self.ui.clear_tables()
+
+    # Register tablosunu yeniden doldur
+     self.ui.populate_register_table_gui()
+
+
+    def clear_tables(self):
+    # Register tablosunu sıfırla
+     self.register_table.clearContents()
+    # Diğer tabloları da aynı şekilde sıfırlayabilirsiniz
+
+#-----------------RESET------------------------------------------------------------------      
         
         
     
