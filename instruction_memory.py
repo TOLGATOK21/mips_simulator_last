@@ -12,6 +12,7 @@ class InstructionMemory(QObject):
         self.memory = {}
         self.next_address = 0x00400000  # Başlangıç adresi
         self.pc = 0x00400000 
+        self.loop_addresses ={}
         
 
     def load_program(self, program):
@@ -78,23 +79,40 @@ class InstructionMemory(QObject):
             self.lw(operands)
         elif opcode == 'sw':
             self.sw(operands)
+        elif opcode == 'li':
+            self.li(operands)
+        elif opcode == 'addi':
+            self.addi(operands)
         elif opcode == 'add':
             self.add(operands)
         elif opcode == 'sub':
             self.sub(operands)
+        elif opcode == 'and':
+            self.logical_and(operands)
+        elif opcode == 'or':
+            self.logical_or(operands)
+        elif opcode == 'slt':
+            self.set_less_than(operands)
+        elif opcode == 'slti':
+            self.set_less_than_immediate(operands)
         elif opcode == 'j':
             address = operands[0]
             self.jump(address)
-        elif opcode == 'jal':
-            address = operands[0]
-            self.jal(address)
+        
+        elif opcode == 'loop':
+            self.loop_addresses[opcode] = self.pc
+            
         else:
             print(f"Current Address: {self.pc}, Opcode: {opcode}, Operands: {operands}")
      else:
         print("Hata: Geçersiz adres")
 
     # Program sayacını bir sonraki adrese geçir
+     self.registers["pc"] = self.pc
      self.pc += 4
+     
+
+     
      self.update_register_table(self.registers)
 
 
@@ -283,16 +301,140 @@ class InstructionMemory(QObject):
             print(f"Hata: {register_name_result} geçersiz bir register adı.")
      else:
         print("Hata: Geçersiz register adı.")    
-    def jump(self, address):
-    # pc'yi yeni adrese ayarla
-     self.pc = address
-
-    def jal(self, address):
-    # pc'yi yeni adrese ayarla
-     self.registers["$ra"] = self.pc + 4  # Return Address'i kaydet
-     self.pc = address
-
      
+    def mul(self, operands):
+    # Gerekli operandları al
+     register_name_result = operands[0].strip()
+     register_name_1 = operands[1].strip()
+     register_name_2 = operands[2].strip()
+
+    # İlk iki registerdan değerleri al
+     if register_name_1 in self.registers and register_name_2 in self.registers:
+        value_1 = self.registers[register_name_1]
+        value_2 = self.registers[register_name_2]
+
+        # Değerleri çarp
+        result = value_1 * value_2
+
+        # Sonucu ilk registera yaz
+        if register_name_result in self.registers:
+            self.registers[register_name_result] = result
+            print(f"{register_name_result} register'ına {register_name_1} ve {register_name_2} registerlarının çarpımı olan {result} değeri yazıldı.")
+        else:
+            print(f"Hata: {register_name_result} geçersiz bir register adı.")
+     else:
+        print("Hata: Geçersiz register adı.")
+
+    def div(self, operands):
+    # Gerekli operandları al
+     register_name_1 = operands[0].strip()
+     register_name_2 = operands[1].strip()
+
+    # İlk iki registerdan değerleri al
+     if register_name_1 in self.registers and register_name_2 in self.registers:
+        value_1 = self.registers[register_name_1]
+        value_2 = self.registers[register_name_2]
+
+        # Değerleri böl
+        quotient = value_1 // value_2
+        remainder = value_1 % value_2
+
+        # Sonuçları ilgili registerlara yaz
+        if "$hi" in self.registers:
+            self.registers["$hi"] = remainder
+        else:
+            print("Hata: $hi geçersiz bir register adı.")
+        if "$lo" in self.registers:
+            self.registers["$lo"] = quotient
+        else:
+            print("Hata: $lo geçersiz bir register adı.")
+     else:
+        print("Hata: Geçersiz register adı.")
+    
+    def jump(self, operands):
+     label = operands[0].strip()
+     address = self.loop_addresses[label]
+     self.pc = address
+
+    def jump_and_link(self, operands):
+     address = operands[0].strip()
+     return_address_register = operands[1]
+     self.pc = address
+     self.registers[return_address_register] = self.pc + 4
+
+    def beq(self, operands):
+     register1 = operands[0]
+     register2 = operands[1]
+     label_address = operands[2].strip()
+     if self.registers[register1] == self.registers[register2]:
+        self.pc = label_address
+
+    def bne(self, operands):
+     register1 = operands[0]
+     register2 = operands[1]
+     label_address = operands[2].strip()
+     if self.registers[register1] != self.registers[register2]:
+        self.pc = label_address
+
+    def blt(self, operands):
+     register1 = operands[0]
+     register2 = operands[1]
+     label_address = operands[2]
+     if self.registers[register1] < self.registers[register2]:
+        self.pc = label_address
+
+    def bgt(self, operands):
+     register1 = operands[0]
+     register2 = operands[1]
+     label_address = operands[2]
+     if self.registers[register1] > self.registers[register2]:
+        self.pc = label_address
+
+    def ble(self, operands):
+     register1 = operands[0]
+     register2 = operands[1]
+     label_address = operands[2]
+     if self.registers[register1] <= self.registers[register2]:
+        self.pc = label_address
+
+    def bge(self, operands):
+     register1 = operands[0]
+     register2 = operands[1]
+     label_address = operands[2]
+     if self.registers[register1] >= self.registers[register2]:
+        self.pc = label_address
+
+    def li(self, operands):
+     register_name = operands[0].strip()  # Hedef register
+     immediate_value = int(operands[1].strip())  # Hemen değeri
+
+    # Hemen değeri hedef register'a yaz
+     if register_name in self.registers:
+        self.registers[register_name] = immediate_value
+        print(f"{register_name} register'ına {immediate_value} değeri yazıldı.")
+     else:
+        print(f"Hata: {register_name} geçersiz bir register adı.")
+        
+    def addi(self, operands):
+     destination_register = operands[0].strip()  # Hedef register
+     source_register = operands[1].strip()       # Kaynak register
+     immediate_value = int(operands[2].strip())   # Hemen değer
+
+    # Kaynak registerdaki değeri al ve hemen değerle topla
+     if source_register in self.registers:
+        source_value = self.registers[source_register]
+        result = source_value + immediate_value
+
+        # Sonucu hedef register'a yaz
+        if destination_register in self.registers:
+            self.registers[destination_register] = result
+            print(f"{immediate_value} değeri {source_register} register'ından alındı ve {result} değeri {destination_register} register'ına yazıldı.")
+        else:
+            print(f"Hata: {destination_register} geçersiz bir register adı.")
+     else:
+        print(f"Hata: {source_register} geçersiz bir register adı.")
+
+ 
      
      
     registers = {

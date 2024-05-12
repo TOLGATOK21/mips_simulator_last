@@ -220,6 +220,8 @@ class Ui_MainWindow(object):
         self.pushButton.clicked.connect(self.toggle_theme)
         self.runButton.clicked.connect(self.data_process)
         self.stepButton.clicked.connect(self.instruction_memory.next_step)
+       
+        
         
         self.resetButton = QtWidgets.QPushButton(self.centralwidget)
         self.resetButton.setGeometry(QtCore.QRect(500, 20, 101, 41))
@@ -281,7 +283,7 @@ class Ui_MainWindow(object):
     def update_table(self):
          for row, (address, value) in enumerate(self.data_memory.memory.items()):
             item_address = QtWidgets.QTableWidgetItem(hex(address))
-            item_value = QtWidgets.QTableWidgetItem(hex(value))
+            item_value = QtWidgets.QTableWidgetItem(format(value, '#010x'))
             self.data_memory_table.setItem(row, 0, item_address)
             self.data_memory_table.setItem(row, 1, item_value)
             
@@ -329,7 +331,7 @@ class Ui_MainWindow(object):
         # Register tablosunu doldur
         for row, (register_name, value) in enumerate(self.instruction_memory.registers.items()):
             item_name = QtWidgets.QTableWidgetItem(register_name)
-            item_value = QtWidgets.QTableWidgetItem(hex(value))
+            item_value = QtWidgets.QTableWidgetItem(format(value, '#010x'))
             self.register_table.setItem(row, 0, item_name)
             self.register_table.setItem(row, 1, item_value)
             
@@ -337,11 +339,24 @@ class Ui_MainWindow(object):
      row = 0
      for register_name, value in self.instruction_memory.registers.items():
         item_register_name = QtWidgets.QTableWidgetItem(register_name)
-        item_value = QtWidgets.QTableWidgetItem(hex(value))
+        item_value = QtWidgets.QTableWidgetItem(format(value, '#010x'))
         self.register_table.setItem(row, 0, item_register_name)
         self.register_table.setItem(row, 1, item_value)
         row += 1
+        self.highlight_instruction_at_pc(self.instruction_memory.pc)
         
+    def highlight_instruction_at_pc(self, pc):
+    # Bellek tablosunda dolaşarak pc adresini bul
+     for row in range(self.instruction_memory_table.rowCount()):
+        address_item = self.instruction_memory_table.item(row, 0)
+        if address_item and int(address_item.text(), 16) == pc:
+            # Eğer pc adresi bulunduysa, o satırı seç
+            self.instruction_memory_table.selectRow(row)
+            # Gerekirse bu satırı göstermek için scroll yapabilirsiniz
+            self.instruction_memory_table.scrollToItem(address_item)
+            break
+        
+    
         
 #-----------------RESET------------------------------------------------------------------      
     def reset_program(self):
@@ -406,10 +421,8 @@ class Ui_MainWindow(object):
             app.setStyleSheet("")
         else:
             app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
-
-        
-        
-
+            
+  
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
