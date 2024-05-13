@@ -388,7 +388,9 @@ class Ui_MainWindow(object):
      self.register_table.clearContents()
     # Diğer tabloları da aynı şekilde sıfırlayabilirsiniz
 
-#-----------------RESET------------------------------------------------------------------      
+#-----------------RESET------------------------------------------------------------------ 
+
+     
         
         
     
@@ -482,9 +484,9 @@ class Ui_MainWindow(object):
         self.label_3.setText(_translate("MainWindow", "Instruction Memory"))
         self.label_4.setText(_translate("MainWindow", "Data Memory"))
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.tab_memory), _translate("MainWindow", "Memory"))
-        self.assembleButton.setText(_translate("MainWindow", "Assemble"))
+        self.assembleButton.setText(_translate("MainWindow", "Run"))
         self.stepButton.setText(_translate("MainWindow", "Step"))
-        self.runButton.setText(_translate("MainWindow", "Run"))
+        self.runButton.setText(_translate("MainWindow", "Assemble"))
         self.saveButton.setText(_translate("MainWindow", "Save"))
         self.mips_messages.setTabText(self.mips_messages.indexOf(self.tab), _translate("MainWindow", "MIPS Messages"))
         self.mips_messages.setTabText(self.mips_messages.indexOf(self.tab_2), _translate("MainWindow", "Run I/O"))

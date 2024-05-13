@@ -12,25 +12,37 @@ class InstructionMemory(QObject):
         self.memory = {}
         self.next_address = 0x00400000  # Başlangıç adresi
         self.pc = 0x00400000 
-        self.loop_addresses ={}
+        self.loop_addresses = {}
+       
         
 
     def load_program(self, program):
-     """
-     Programı belleğe yükleyin.
-     """
+    
      for instruction in program:
-        opcode = instruction[0]
+        opcode = instruction[0].strip()
         operands = instruction[1:]
 
         if self.next_address in self.memory:
             print("Hata: Bu adreste zaten bir komut var.")
             continue
 
+        # Eğer komutun ilk öğesi bir etiketse
+        if opcode.endswith(':'):
+            # Etiketi al
+            label = opcode[:-1]
+            # Etiketin adresini ekle
+            self.loop_addresses[label] = self.next_address
+            # Etiketi programdan çıkar
+            opcode = instruction[0]
+            operands = instruction[1:]
+
+        # Belleğe komutu ekle
         self.memory[self.next_address] = {'opcode': opcode, 'operands': operands}
         
-    # Adresi bir sonraki komut için artır
-        self.next_address += len(program) * 4
+        # Adresi bir sonraki komut için artır
+        self.next_address += 4
+        print(self.loop_addresses)
+
 
     def read_instruction(self, address):
         """
@@ -79,14 +91,8 @@ class InstructionMemory(QObject):
             self.lw(operands)
         elif opcode == 'sw':
             self.sw(operands)
-        elif opcode == 'li':
-            self.li(operands)
-        elif opcode == 'addi':
-            self.addi(operands)
         elif opcode == 'add':
             self.add(operands)
-        elif opcode == 'sub':
-            self.sub(operands)
         elif opcode == 'and':
             self.logical_and(operands)
         elif opcode == 'or':
@@ -95,12 +101,47 @@ class InstructionMemory(QObject):
             self.set_less_than(operands)
         elif opcode == 'slti':
             self.set_less_than_immediate(operands)
+        elif opcode == 'mul':
+            self.mul(operands)
+        elif opcode == 'div':
+            self.div(operands)
         elif opcode == 'j':
-            address = operands[0]
-            self.jump(address)
+            self.jump(operands)
+        elif opcode == 'jal':
+            self.jump(operands)
+        elif opcode == 'beq':
+            self.beq(operands)
+        elif opcode == 'bne':
+            self.blt(operands)
+        elif opcode == 'blt':
+            self.blt(operands)
+        elif opcode == 'bgt':
+            self.bgt(operands)
+        elif opcode == 'ble':
+            self.ble(operands)
+        elif opcode == 'bge':
+            self.bge(operands)
+        elif opcode == 'li':
+            self.li(operands)
+        elif opcode == 'addi':
+            self.addi(operands)
+        elif opcode == 'subi':
+            self.subi(operands)
+        
+        
+        elif opcode == 'sub':
+            self.sub(operands)
+        elif opcode == 'and':
+            self.logical_and(operands)
+        
+        
+        
+        
+        
+
         
         elif opcode == 'loop':
-            self.loop_addresses[opcode] = self.pc
+            pass
             
         else:
             print(f"Current Address: {self.pc}, Opcode: {opcode}, Operands: {operands}")
@@ -352,57 +393,117 @@ class InstructionMemory(QObject):
         print("Hata: Geçersiz register adı.")
     
     def jump(self, operands):
-     label = operands[0].strip()
-     address = self.loop_addresses[label]
-     self.pc = address
+        label = operands[0].strip()
+        
+        # Etiketin adresini self.memory sözlüğünden al
+        if label in self.loop_addresses:
+            address = self.loop_addresses[label]
+            self.pc = address
+        else:
+            print(f"Hata: {label} etiketi tanımlanmamış.")
 
     def jump_and_link(self, operands):
-     address = operands[0].strip()
-     return_address_register = operands[1]
-     self.pc = address
-     self.registers[return_address_register] = self.pc + 4
+        label = operands[0].strip()
+        return_address_register = operands[1]
+        
+        # Etiketin adresini self.memory sözlüğünden al
+        if label in self.loop_addresses:
+            address = self.loop_addresses[label]
+            self.pc = address
+            # Dönüş adresini hesapla ve ilgili register'a yaz
+            self.registers[return_address_register] = self.pc + 4
+        else:
+            print(f"Hata: {label} etiketi tanımlanmamış.")
 
     def beq(self, operands):
-     register1 = operands[0]
-     register2 = operands[1]
-     label_address = operands[2].strip()
-     if self.registers[register1] == self.registers[register2]:
-        self.pc = label_address
+        register1 = operands[0]
+        register2 = operands[1].strip()
+        label = operands[2].strip()  # Etiket adını al
+        
+        # Etiketin adresini self.memory sözlüğünden al
+        if label in self.loop_addresses:
+            label_address = self.loop_addresses[label]
+            
+            # Eğer etiketin adresi varsa ve koşul sağlanıyorsa devam et
+            if self.registers[register1] == self.registers[register2]:
+                self.pc = label_address
+        else:
+            print(f"Hata: {label} etiketi tanımlanmamış.")
 
     def bne(self, operands):
-     register1 = operands[0]
-     register2 = operands[1]
-     label_address = operands[2].strip()
-     if self.registers[register1] != self.registers[register2]:
-        self.pc = label_address
+        register1 = operands[0]
+        register2 = operands[1]
+        label = operands[2].strip()  # Etiket adını al
+        
+        # Etiketin adresini self.memory sözlüğünden al
+        if label in self.loop_addresses:
+            label_address = self.loop_addresses[label]
+            
+            # Eğer etiketin adresi varsa ve koşul sağlanıyorsa devam et
+            if self.registers[register1] != self.registers[register2]:
+                self.pc = label_address
+        else:
+            print(f"Hata: {label} etiketi tanımlanmamış.")
 
     def blt(self, operands):
-     register1 = operands[0]
-     register2 = operands[1]
-     label_address = operands[2]
-     if self.registers[register1] < self.registers[register2]:
-        self.pc = label_address
+        register1 = operands[0]
+        register2 = operands[1]
+        label = operands[2].strip()  # Etiket adını al
+        
+        # Etiketin adresini self.memory sözlüğünden al
+        if label in self.loop_addresses:
+            label_address = self.loop_addresses[label]
+            
+            # Eğer etiketin adresi varsa ve koşul sağlanıyorsa devam et
+            if self.registers[register1] < self.registers[register2]:
+                self.pc = label_address
+        else:
+            print(f"Hata: {label} etiketi tanımlanmamış.")
 
     def bgt(self, operands):
-     register1 = operands[0]
-     register2 = operands[1]
-     label_address = operands[2]
-     if self.registers[register1] > self.registers[register2]:
-        self.pc = label_address
+        register1 = operands[0]
+        register2 = operands[1]
+        label = operands[2].strip()  # Etiket adını al
+        
+        # Etiketin adresini self.memory sözlüğünden al
+        if label in self.loop_addresses:
+            label_address = self.loop_addresses[label]
+            
+            # Eğer etiketin adresi varsa ve koşul sağlanıyorsa devam et
+            if self.registers[register1] > self.registers[register2]:
+                self.pc = label_address
+        else:
+            print(f"Hata: {label} etiketi tanımlanmamış.")
 
     def ble(self, operands):
-     register1 = operands[0]
-     register2 = operands[1]
-     label_address = operands[2]
-     if self.registers[register1] <= self.registers[register2]:
-        self.pc = label_address
+        register1 = operands[0]
+        register2 = operands[1]
+        label = operands[2].strip()  # Etiket adını al
+        
+        # Etiketin adresini self.memory sözlüğünden al
+        if label in self.loop_addresses:
+            label_address = self.loop_addresses[label]
+            
+            # Eğer etiketin adresi varsa ve koşul sağlanıyorsa devam et
+            if self.registers[register1] <= self.registers[register2]:
+                self.pc = label_address
+        else:
+            print(f"Hata: {label} etiketi tanımlanmamış.")
 
     def bge(self, operands):
-     register1 = operands[0]
-     register2 = operands[1]
-     label_address = operands[2]
-     if self.registers[register1] >= self.registers[register2]:
-        self.pc = label_address
+        register1 = operands[0]
+        register2 = operands[1]
+        label = operands[2].strip()  # Etiket adını al
+        
+        # Etiketin adresini self.memory sözlüğünden al
+        if label in self.loop_addresses:
+            label_address = self.loop_addresses[label]
+            
+            # Eğer etiketin adresi varsa ve koşul sağlanıyorsa devam et
+            if self.registers[register1] >= self.registers[register2]:
+                self.pc = label_address
+        else:
+            print(f"Hata: {label} etiketi tanımlanmamış.")
 
     def li(self, operands):
      register_name = operands[0].strip()  # Hedef register
@@ -433,7 +534,32 @@ class InstructionMemory(QObject):
             print(f"Hata: {destination_register} geçersiz bir register adı.")
      else:
         print(f"Hata: {source_register} geçersiz bir register adı.")
+        
+    def subi(self, operands):
+     destination_register = operands[0].strip()    # Hedef register
+     source_register = operands[1].strip()         # Kaynak register
+     immediate_value = int(operands[2].strip())    # Hemen değer
 
+    # Kaynak registerdaki değeri al ve hemen değeri çıkar
+     if source_register in self.registers:
+        source_value = self.registers[source_register]
+        result = source_value - immediate_value
+
+        # Sonucu hedef register'a yaz
+        if destination_register in self.registers:
+            self.registers[destination_register] = result
+            print(f"{immediate_value} değeri {source_register} register'ından çıkarıldı ve {result} değeri {destination_register} register'ına yazıldı.")
+        else:
+            print(f"Hata: {destination_register} geçersiz bir register adı.")
+     else:
+        print(f"Hata: {source_register} geçersiz bir register adı.")
+     
+    
+    def loop(self, operands):
+        label = operands[0].strip()
+        address = self.pc  # Şu anki program sayacı değeri
+        self.loop_addresses[label] = address
+        self.registers["$ra"] = address
  
      
      
