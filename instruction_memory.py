@@ -15,7 +15,7 @@ class InstructionMemory(QObject):
     def __init__(self):
         super().__init__()
         self.memory = {}
-        self.next_address = 0x00400000  # Başlangıç adresi
+        self.next_address = 0x00400000 
         self.pc = 0x00400000 
         self.loop_addresses = {}
        
@@ -31,20 +31,20 @@ class InstructionMemory(QObject):
             print("Hata: Bu adreste zaten bir komut var.")
             continue
 
-        # Eğer komutun ilk öğesi bir etiketse
+       
         if opcode.endswith(':'):
-            # Etiketi al
+            
             label = opcode[:-1]
-            # Etiketin adresini ekle
+           
             self.loop_addresses[label] = self.next_address
-            # Etiketi programdan çıkar
+           
             opcode = instruction[0]
             operands = instruction[1:]
 
-        # Belleğe komutu ekle
+        
         self.memory[self.next_address] = {'opcode': opcode, 'operands': operands}
         
-        # Adresi bir sonraki komut için artır
+       
         self.next_address += 4
         print(self.loop_addresses)
 
@@ -65,25 +65,25 @@ class InstructionMemory(QObject):
      program = []
 
      for row in rows:
-        row = row.strip()  # Satırın başındaki ve sonundaki boşlukları temizle
-        if not row:  # Eğer satır boşsa atla
+        row = row.strip() 
+        if not row:  
             continue
         
-        # Satırı boşluğa kadar ve komut parçalarına ayır
+        
         parts = row.split(' ', 1)
         opcode, rest = parts[0], parts[1] if len(parts) > 1 else ''
     
-        # Operandları ayır
+       
         operands = rest.split(',') if rest else []
 
-        # Programa ekle
+        
         program.append((opcode, *operands))
         
-    # Komutları belleğe yükle
+    
         self.load_program(program)
         print(f"Address: {self.next_address}, Program: {program}")
     
-    # Güncelleme sinyalini yayınla
+    
         self.instruction_memory_updated.emit()
         
     def next_step(self):
@@ -171,7 +171,7 @@ class InstructionMemory(QObject):
      else:
         print("Hata: Geçersiz adres")
 
-    # Program sayacını bir sonraki adrese geçir
+   
      self.registers["pc"] = self.pc
      self.pc += 4
      
@@ -189,11 +189,10 @@ class InstructionMemory(QObject):
         """
         System call işlevini çağırır.
         """
-        # $v0 registerı, system call numarasını tutar.
+        
         syscall_number = self.registers["$v0"]
         
-        if syscall_number == 1:  # Print integer
-            # Yazdırılacak değer $a0 registerında bulunur.
+        if syscall_number == 1:  
             self.output_of_code = str(self.output_of_code) + str(self.registers["$a0"])
             self.output_of_code_changed.emit(self.output_of_code)
             return print(str(self.output_of_code))
@@ -202,7 +201,7 @@ class InstructionMemory(QObject):
             
             
         
-        elif syscall_number == 10:  # Programı sonlandır
+        elif syscall_number == 10: 
             print_value2 = "Program ended..."
             print(str(print_value2))
             sys.exit()
@@ -211,19 +210,19 @@ class InstructionMemory(QObject):
             print("Hata: Geçersiz system call numarası.")
 
     def lw(self, operands):
-    # İlk operand register adı, ikinci operand ise data belleğindeki değişkenin adı olacak
+   
      register_name  = operands[0]
      var_name = operands[1].strip()
 
 
-    # Data belleği sözlüğünden değişkenin değerini al
+   
      if var_name in DataMemory.degiskenler:
         value = self.data_memory.degiskenler[var_name]
      else:
         print(f"Hata: {var_name} adında bir değişken bulunamadı.")
         return
 
-    # Register sözlüğünü güncelle
+   
      if register_name in self.registers:
         self.registers[register_name] = value
         print(f"{register_name} register'ı {value} değişkeninin değeriyle güncellendi.")
@@ -235,18 +234,18 @@ class InstructionMemory(QObject):
         
         
     def move(self, operands):
-    # İşlem için gerekli operandları al
-     source_register = operands[0].strip()  # Kaynak register $a0 
-     destination_register = operands[1].strip()  # Hedef register $$t2
+   
+     source_register = operands[0].strip() 
+     destination_register = operands[1].strip() 
 
-    # Kaynak register'dan veriyi al
+   
      if destination_register in self.registers:
         value = self.registers[destination_register]
      else:
         print(f"Hata: {destination_register} adında bir register bulunamadı.")
         return
 
-    # Hedef register'ı güncelle
+   
      if source_register in self.registers:
         self.registers[source_register] = value
         print(f"{source_register} register'ı {destination_register} register'ının değeriyle güncellendi.")
@@ -266,11 +265,11 @@ class InstructionMemory(QObject):
 
 
     def sw(self, operands):
-    # İşlem için gerekli operandları al
-     register_name = operands[0]  # Kaynak register
-     var_name = operands[1].strip()  # Hedef değişken adı 
+   
+     register_name = operands[0]  
+     var_name = operands[1].strip()  
 
-    # Veriyi register'dan al
+  
      if register_name in self.registers:
         value = self.registers[register_name]
         print("ALINAN REGİSTERDAKİ DEĞER:", value)
@@ -278,7 +277,7 @@ class InstructionMemory(QObject):
         print(f"Hata: {register_name} adında bir register bulunamadı.")
         return
 
-    # Değişken adına ait bellek adresini al
+   
      if var_name in self.data_memory.degisken_adresler:
         address = self.data_memory.degisken_adresler[var_name]
         print("BELLEK ADDRESİ", hex(address))
@@ -288,29 +287,29 @@ class InstructionMemory(QObject):
      self.data_memory.write_memory(address, value,var_name)
      self.data_memory.memory_updated.emit(self.data_memory.memory)
 
-    # Verinin güncellenmesi
+   
      
 
 
-    # Belleğe veriyi yaz
+   
      
      print(f"{register_name} register'ındaki değer {var_name} değişkeninin adresindeki belleğe yazıldı.")
 
 
     def add(self, operands):
-    # Gerekli operandları alın
+   
      register_name_result = operands[0].strip()
      register_name_1 = operands[1].strip()
      register_name_2 = operands[2].strip()
 
-    # İlk iki registerdan değerleri al
+   
      if register_name_1 in self.registers and register_name_2 in self.registers:
         value_1 = self.registers[register_name_1]
         value_2 = self.registers[register_name_2]
         
-        # Değerleri topla
+       
         result = value_1 + value_2
-        # Sonucu ilk registera yaz
+       
         if register_name_result in self.registers:
             self.registers[register_name_result] = result
             print(f"{register_name_result} register'ına {register_name_1} ve {register_name_2} registerlarının toplamı olan {result} değeri yazıldı.")
@@ -325,14 +324,14 @@ class InstructionMemory(QObject):
      register_name_2 = operands[2].strip()
      
 
-    # İlk iki registerdan değerleri al
+   
      if register_name_1 in self.registers and register_name_2 in self.registers:
         value_1 = self.registers[register_name_1]
         value_2 = self.registers[register_name_2]
         print("SUB FONK DEĞERLERİ ", value_1, value_2)
-        # Değerleri topla
+      
         result = (int(value_1) - int(value_2))
-        # Sonucu ilk registera yaz
+       
         if register_name_result in self.registers:
             self.registers[register_name_result] = result
             print(f"{register_name_result} register'ına {register_name_1} ve {register_name_2} registerlarının farkı olan {result} değeri yazıldı.")
@@ -346,14 +345,14 @@ class InstructionMemory(QObject):
      register_name_1 = operands[1].strip()
      register_name_2 = operands[2].strip()
 
-    # İlk iki registerdan değerleri al
+   
      if register_name_1 in self.registers and register_name_2 in self.registers:
         value_1 = self.registers[register_name_1]
         value_2 = self.registers[register_name_2]
         
-        # Mantıksal AND işlemi yap
+       
         result = value_1 & value_2
-        # Sonucu ilk registera yaz
+        
         if register_name_result in self.registers:
             self.registers[register_name_result] = result
             print(f"{register_name_result} register'ına {register_name_1} ve {register_name_2} registerlarının mantıksal AND'i olan {result} değeri yazıldı.")
@@ -367,14 +366,14 @@ class InstructionMemory(QObject):
      register_name_1 = operands[1].strip()
      register_name_2 = operands[2].strip()
 
-    # İlk iki registerdan değerleri al
+   
      if register_name_1 in self.registers and register_name_2 in self.registers:
         value_1 = self.registers[register_name_1]
         value_2 = self.registers[register_name_2]
         
-        # Mantıksal OR işlemi yap
+        
         result = value_1 | value_2
-        # Sonucu ilk registera yaz
+       
         if register_name_result in self.registers:
             self.registers[register_name_result] = result
             print(f"{register_name_result} register'ına {register_name_1} ve {register_name_2} registerlarının mantıksal OR'u olan {result} değeri yazıldı.")
@@ -388,14 +387,14 @@ class InstructionMemory(QObject):
      register_name_1 = operands[1].strip()
      register_name_2 = operands[2].strip()
 
-    # İlk iki registerdan değerleri al
+    
      if register_name_1 in self.registers and register_name_2 in self.registers:
         value_1 = self.registers[register_name_1]
         value_2 = self.registers[register_name_2]
         
-        # Küçüklük karşılaştırması yap
+        
         result = 1 if value_1 < value_2 else 0
-        # Sonucu ilk registera yaz
+        
         if register_name_result in self.registers:
             self.registers[register_name_result] = result
             print(f"{register_name_result} register'ına {register_name_1} ve {register_name_2} registerlarının küçüklük karşılaştırması sonucu olan {result} değeri yazıldı.")
@@ -409,13 +408,13 @@ class InstructionMemory(QObject):
      register_name_1 = operands[1].strip()
      immediate = int(operands[2].strip())
 
-    # İlk registerın değerini al
+  
      if register_name_1 in self.registers:
         value_1 = self.registers[register_name_1]
         
-        # Küçüklük karşılaştırması yap
+       
         result = 1 if value_1 < immediate else 0
-        # Sonucu ilk registera yaz
+     
         if register_name_result in self.registers:
             self.registers[register_name_result] = result
             print(f"{register_name_result} register'ına {register_name_1} ve {immediate} değerlerinin küçüklük karşılaştırması sonucu olan {result} değeri yazıldı.")
@@ -425,20 +424,20 @@ class InstructionMemory(QObject):
         print("Hata: Geçersiz register adı.")    
      
     def mult(self, operands):
-    # Gerekli operandları al
+    
      register_name_result = operands[0].strip()
      register_name_1 = operands[1].strip()
      register_name_2 = operands[2].strip()
 
-    # İlk iki registerdan değerleri al
+   
      if register_name_1 in self.registers and register_name_2 in self.registers:
         value_1 = self.registers[register_name_1]
         value_2 = self.registers[register_name_2]
 
-        # Değerleri çarp
+        
         result = value_1 * value_2
 
-        # Sonucu "hi" ve "lo" registerlarına kaydet
+       
         self.registers['hi'] = (result >> 32) & 0xFFFFFFFF
         self.registers['lo'] = result & 0xFFFFFFFF
         self.registers[register_name_result] = result
@@ -452,15 +451,15 @@ class InstructionMemory(QObject):
      register_name_1 = operands[1].strip()
      register_name_2 = operands[2].strip()
 
-    # İlk iki registerdan değerleri al
+    
      if register_name_1 in self.registers and register_name_2 in self.registers:
         value_1 = self.registers[register_name_1]
         value_2 = self.registers[register_name_2]
         
-        # Değerleri çarp
+     
         result = value_1 * value_2
         
-        # Sonucu ilk registera yaz
+       
         if register_name_result in self.registers:
             self.registers[register_name_result] = result
             print(f"{register_name_result} register'ına {register_name_1} ve {register_name_2} registerlarının çarpımı olan {result} değeri yazıldı.")
@@ -471,20 +470,20 @@ class InstructionMemory(QObject):
 
 
     def div(self, operands):
-    # Gerekli operandları al
+  
      register_name_1 = operands[0].strip()
      register_name_2 = operands[1].strip()
 
-    # İlk iki registerdan değerleri al
+    
      if register_name_1 in self.registers and register_name_2 in self.registers:
         value_1 = self.registers[register_name_1]
         value_2 = self.registers[register_name_2]
 
-        # Değerleri böl
+       
         quotient = value_1 // value_2
         remainder = value_1 % value_2
 
-        # Sonuçları "hi" ve "lo" registerlarına yaz
+       
         self.registers['hi'] = remainder
         self.registers['lo'] = quotient
 
@@ -496,7 +495,7 @@ class InstructionMemory(QObject):
     def jump(self, operands):
         label = operands[0].strip()
         
-        # Etiketin adresini self.memory sözlüğünden al
+        
         if label in self.loop_addresses:
             address = self.loop_addresses[label]
             self.pc = address
@@ -507,11 +506,11 @@ class InstructionMemory(QObject):
         label = operands[0].strip()
         return_address_register = operands[1]
         
-        # Etiketin adresini self.memory sözlüğünden al
+   
         if label in self.loop_addresses:
             address = self.loop_addresses[label]
             self.pc = address
-            # Dönüş adresini hesapla ve ilgili register'a yaz
+     
             self.registers[return_address_register] = self.pc + 4
         else:
             print(f"Hata: {label} etiketi tanımlanmamış.")
@@ -519,13 +518,12 @@ class InstructionMemory(QObject):
     def beq(self, operands):
         register1 = operands[0]
         register2 = operands[1].strip()
-        label = operands[2].strip()  # Etiket adını al
-        
-        # Etiketin adresini self.memory sözlüğünden al
+        label = operands[2].strip() 
+       
         if label in self.loop_addresses:
             label_address = self.loop_addresses[label]
             
-            # Eğer etiketin adresi varsa ve koşul sağlanıyorsa devam et
+          
             if self.registers[register1] == self.registers[register2]:
                 self.pc = label_address
         else:
@@ -534,13 +532,13 @@ class InstructionMemory(QObject):
     def bne(self, operands):
         register1 = operands[0]
         register2 = operands[1]
-        label = operands[2].strip()  # Etiket adını al
+        label = operands[2].strip() 
         
-        # Etiketin adresini self.memory sözlüğünden al
+        
         if label in self.loop_addresses:
             label_address = self.loop_addresses[label]
             
-            # Eğer etiketin adresi varsa ve koşul sağlanıyorsa devam et
+           
             if self.registers[register1] != self.registers[register2]:
                 self.pc = label_address
         else:
@@ -549,13 +547,13 @@ class InstructionMemory(QObject):
     def blt(self, operands):
         register1 = operands[0]
         register2 = operands[1]
-        label = operands[2].strip()  # Etiket adını al
+        label = operands[2].strip()  
         
-        # Etiketin adresini self.memory sözlüğünden al
+       
         if label in self.loop_addresses:
             label_address = self.loop_addresses[label]
             
-            # Eğer etiketin adresi varsa ve koşul sağlanıyorsa devam et
+            
             if self.registers[register1] < self.registers[register2]:
                 self.pc = label_address
         else:
@@ -564,13 +562,13 @@ class InstructionMemory(QObject):
     def bgt(self, operands):
         register1 = operands[0]
         register2 = operands[1]
-        label = operands[2].strip()  # Etiket adını al
+        label = operands[2].strip() 
         
-        # Etiketin adresini self.memory sözlüğünden al
+        
         if label in self.loop_addresses:
             label_address = self.loop_addresses[label]
             
-            # Eğer etiketin adresi varsa ve koşul sağlanıyorsa devam et
+            
             if self.registers[register1] > self.registers[register2]:
                 self.pc = label_address
         else:
@@ -579,13 +577,13 @@ class InstructionMemory(QObject):
     def ble(self, operands):
         register1 = operands[0]
         register2 = operands[1]
-        label = operands[2].strip()  # Etiket adını al
+        label = operands[2].strip() 
         
-        # Etiketin adresini self.memory sözlüğünden al
+       
         if label in self.loop_addresses:
             label_address = self.loop_addresses[label]
             
-            # Eğer etiketin adresi varsa ve koşul sağlanıyorsa devam et
+           
             if self.registers[register1] <= self.registers[register2]:
                 self.pc = label_address
         else:
@@ -594,23 +592,23 @@ class InstructionMemory(QObject):
     def bge(self, operands):
         register1 = operands[0]
         register2 = operands[1]
-        label = operands[2].strip()  # Etiket adını al
+        label = operands[2].strip() 
         
-        # Etiketin adresini self.memory sözlüğünden al
+       
         if label in self.loop_addresses:
             label_address = self.loop_addresses[label]
             
-            # Eğer etiketin adresi varsa ve koşul sağlanıyorsa devam et
+           
             if self.registers[register1] >= self.registers[register2]:
                 self.pc = label_address
         else:
             print(f"Hata: {label} etiketi tanımlanmamış.")
 
     def li(self, operands):
-     register_name = operands[0].strip()  # Hedef register
-     immediate_value = int(operands[1].strip())  # Hemen değeri
+     register_name = operands[0].strip() 
+     immediate_value = int(operands[1].strip())  
 
-    # Hemen değeri hedef register'a yaz
+   
      if register_name in self.registers:
         self.registers[register_name] = immediate_value
         print(f"{register_name} register'ına {immediate_value} değeri yazıldı.")
@@ -618,16 +616,16 @@ class InstructionMemory(QObject):
         print(f"Hata: {register_name} geçersiz bir register adı.")
         
     def addi(self, operands):
-     destination_register = operands[0].strip()  # Hedef register
-     source_register = operands[1].strip()       # Kaynak register
-     immediate_value = int(operands[2].strip())   # Hemen değer
+     destination_register = operands[0].strip() 
+     source_register = operands[1].strip()      
+     immediate_value = int(operands[2].strip())  
 
-    # Kaynak registerdaki değeri al ve hemen değerle topla
+   
      if source_register in self.registers:
         source_value = self.registers[source_register]
         result = source_value + immediate_value
 
-        # Sonucu hedef register'a yaz
+       
         if destination_register in self.registers:
             self.registers[destination_register] = result
             print(f"{immediate_value} değeri {source_register} register'ından alındı ve {result} değeri {destination_register} register'ına yazıldı.")
@@ -637,16 +635,16 @@ class InstructionMemory(QObject):
         print(f"Hata: {source_register} geçersiz bir register adı.")
         
     def subi(self, operands):
-     destination_register = operands[0].strip()    # Hedef register
-     source_register = operands[1].strip()         # Kaynak register
-     immediate_value = int(operands[2].strip())    # Hemen değer
+     destination_register = operands[0].strip()   
+     source_register = operands[1].strip()       
+     immediate_value = int(operands[2].strip())   
 
-    # Kaynak registerdaki değeri al ve hemen değeri çıkar
+    
      if source_register in self.registers:
         source_value = self.registers[source_register]
         result = source_value - immediate_value
 
-        # Sonucu hedef register'a yaz
+      
         if destination_register in self.registers:
             self.registers[destination_register] = result
             print(f"{immediate_value} değeri {source_register} register'ından çıkarıldı ve {result} değeri {destination_register} register'ına yazıldı.")
@@ -693,8 +691,6 @@ class InstructionMemory(QObject):
      register_name = operands[0].strip()
      if register_name in self.registers:
         address = self.registers[register_name]
-        # Eğer işlemci kendi adresini değiştirirse burada adresi güncelle
-        # Örnek: self.program_counter = address
         print(f"Program counter, {register_name} registerındaki adres ({address}) ile güncellendi.")
      else:
         print("Hata: Geçersiz register adı.")
@@ -735,14 +731,14 @@ class InstructionMemory(QObject):
     
     def loop(self, operands):
         label = operands[0].strip()
-        address = self.pc  # Şu anki program sayacı değeri
+        address = self.pc  
         self.loop_addresses[label] = address
         self.registers["$ra"] = address
  
      
      
     registers = {
-            "$zero": 0x00000000,   # Zero Register
+            "$zero": 0x00000000,  
             "$at": 0x00000000,     # Assembler Temporary
             "$v0": 0x00000000,     # Return Value 0
             "$v1": 0x00000000,     # Return Value 1
@@ -781,10 +777,10 @@ class InstructionMemory(QObject):
     
 
     def update_register_table(self, updated_registers):
-        # Register tablosunu güncelle
+        
         self.registers = updated_registers
 
-        # Güncelleme sinyalini yayınla
+        
         self.register_table_updated.emit(self.registers)
      
      

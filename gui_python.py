@@ -218,17 +218,17 @@ class Ui_MainWindow(object):
      data_lines = []
      text_lines = []
 
-    # Metni satırlara ayır
+    
      code_lines = self.code_input.text().split('\n')
 
-    # .data ve .text bölümlerini ayır
+    
      data_section = False
      text_section = False
      for line in code_lines:
         # Boş satırları atla
         if not line.strip():
             continue
-        # Yorum satırlarını atla
+        
         if line.strip().startswith('#'):
             continue
         # Yorum kısmını ayır
@@ -244,15 +244,15 @@ class Ui_MainWindow(object):
         elif text_section:
             text_lines.append(line)
 
-    # .data bölümünü işle
+  
      for data_line in data_lines:
         self.data_memory.process_data_section(data_line)
 
-    # Main etiketini ekleyelim
+    
      if not text_lines or text_lines[0] != 'main:':
         text_lines.insert(0, 'main:')
 
-    # .text bölümünü işle
+    
      for text_line in text_lines:
         self.instruction_memory.process_text_section(text_line)
 
@@ -267,7 +267,7 @@ class Ui_MainWindow(object):
             self.data_memory_table.setItem(row, 1, item_value)
             
     def populate_memory_table(self, data_memory_table):
-        # Bellek tablosunu doldurun
+        
         row = 0
         for address, value in self.data_memory.memory.items():
             data_memory_table.setItem(row, 0, QtWidgets.QTableWidgetItem(hex(address)))
@@ -275,19 +275,19 @@ class Ui_MainWindow(object):
             row += 1
             
     def update_table_instruction(self):
-        row = 0  # Satır indeksi
+        row = 0  
         for address, instruction in self.instruction_memory.memory.items():
             opcode = instruction['opcode']
             operands = instruction['operands']
-            item_address = QtWidgets.QTableWidgetItem(format(address, '#010x')) # format address'ini hexadecimal'e çevirdim ( 8 bit )
-            item_value = QtWidgets.QTableWidgetItem("0x0000000")  # Value değeri sıfır olarak ekledim
+            item_address = QtWidgets.QTableWidgetItem(format(address, '#010x')) 
+            item_value = QtWidgets.QTableWidgetItem("0x0000000")  
             item_source = QtWidgets.QTableWidgetItem(f"{opcode} {operands}")
             item_type = QtWidgets.QTableWidgetItem(f"{opcode}")
             self.instruction_memory_table.setItem(row, 0, item_address)
-            self.instruction_memory_table.setItem(row, 1, item_value)  # Value değeri eklendi
+            self.instruction_memory_table.setItem(row, 1, item_value)  
             self.instruction_memory_table.setItem(row, 2, item_source)
             self.instruction_memory_table.setItem(row, 3, item_type)
-            row += 1  # Satır indeksini arttır
+            row += 1  
             
     
         
@@ -297,17 +297,17 @@ class Ui_MainWindow(object):
     def populate_instruction_memory_table(self, instruction_memory_table):
      address = 0x00400000
      for row in range(instruction_memory_table.rowCount()):
-        # Adresi ve değeri tabloya ekle
+        
         item_address = QtWidgets.QTableWidgetItem(format(address, '#010x'))
         item_value = QtWidgets.QTableWidgetItem("0x00000000")
         instruction_memory_table.setItem(row, 0, item_address)
         instruction_memory_table.setItem(row, 1, item_value)
         
-        # Adresi 4 artır
+       
         address += 4
         
     def populate_register_table_gui(self):
-        # Register tablosunu doldur
+       
         for row, (register_name, value) in enumerate(self.instruction_memory.registers.items()):
             item_name = QtWidgets.QTableWidgetItem(register_name)
             item_value = QtWidgets.QTableWidgetItem(format(value, '#010x'))
@@ -325,13 +325,13 @@ class Ui_MainWindow(object):
         self.highlight_instruction_at_pc(self.instruction_memory.pc)
         
     def highlight_instruction_at_pc(self, pc):
-    # Bellek tablosunda dolaşarak pc adresini bul
+    
      for row in range(self.instruction_memory_table.rowCount()):
         address_item = self.instruction_memory_table.item(row, 0)
         if address_item and int(address_item.text(), 16) == pc:
-            # Eğer pc adresi bulunduysa, o satırı seç
+           
             self.instruction_memory_table.selectRow(row)
-            # Gerekirse bu satırı göstermek için scroll yapabilirsiniz
+            
             self.instruction_memory_table.scrollToItem(address_item)
             break
         
@@ -339,33 +339,18 @@ class Ui_MainWindow(object):
         
 #-----------------RESET------------------------------------------------------------------      
     def reset_program(self):
-    # Yeni bir QApplication oluştur
+    
      self.app = QtWidgets.QApplication([])
-
-    # Yeni bir QMainWindow oluştur
      self.MainWindow = QtWidgets.QMainWindow()
-
-    # Ui_MainWindow sınıfından bir örnek oluştur ve yeni ana pencereye yerleştir
      self.ui = Ui_MainWindow()
      self.ui.setupUi(self.MainWindow)
-
-    # Yeni ana pencereyi göster
      self.MainWindow.show()
-
-    # Mevcut ana pencereyi kapat
      MainWindow.close()
-
-    # Tabloları sıfırla
      self.ui.clear_tables()
-
-    # Register tablosunu yeniden doldur
      self.ui.populate_register_table_gui()
-
-
     def clear_tables(self):
-    # Register tablosunu sıfırla
      self.register_table.clearContents()
-    # Diğer tabloları da aynı şekilde sıfırlayabilirsiniz
+   
 
 #-----------------RESET------------------------------------------------------------------ 
 
@@ -391,23 +376,17 @@ class Ui_MainWindow(object):
 
     #dark tema için        
     def toggle_theme(self):
-        # Uygulama nesnesini al
+       
         app = QtWidgets.QApplication.instance()
-
-        # Tema stiline bak
         current_style = app.styleSheet()
-
-        # Eğer dark tema kullanılıyorsa light tema yap, aksi halde dark tema yap
         if "QDarkStyle" in current_style:
             app.setStyleSheet("")
         else:
             app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
             
     def save_text(self):
-    # Girilen metni al
+    
      text = self.code_input.text()
-
-    # Metni bir dosyaya kaydet
      file_name, _ = QFileDialog.getSaveFileName(self.centralwidget, "Save File", "", "Text Files (*.txt);;All Files (*)")
 
      if file_name:
