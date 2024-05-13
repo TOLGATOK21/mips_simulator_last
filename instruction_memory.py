@@ -1,10 +1,13 @@
 from PyQt5.QtCore import QObject, pyqtSignal
 from data_memory import DataMemory
+import sys
 
 class InstructionMemory(QObject):
     instruction_memory_updated = pyqtSignal()
     data_memory= DataMemory()
     register_table_updated = pyqtSignal(dict)
+    output_of_code = {}
+
    
 
     def __init__(self):
@@ -127,7 +130,10 @@ class InstructionMemory(QObject):
             self.addi(operands)
         elif opcode == 'subi':
             self.subi(operands)
-        
+        elif opcode == 'syscall':
+            self.syscall()
+        elif opcode == 'move':
+            self.move(operands)
         
         elif opcode == 'sub':
             self.sub(operands)
@@ -157,6 +163,30 @@ class InstructionMemory(QObject):
      self.update_register_table(self.registers)
 
 
+    def syscall(self):
+        """
+        System call işlevini çağırır.
+        """
+        # $v0 registerı, system call numarasını tutar.
+        syscall_number = self.registers["$v0"]
+        
+        if syscall_number == 1:  # Print integer
+            # Yazdırılacak değer $a0 registerında bulunur.
+            self.output_of_code["Output:"] = self.registers["$a0"]
+            return print(str(self.output_of_code))
+         
+            
+            
+            
+        
+        elif syscall_number == 10:  # Programı sonlandır
+            print_value2 = "Program ended..."
+            print(str(print_value2))
+            sys.exit()
+        
+        else:
+            print("Hata: Geçersiz system call numarası.")
+
     def lw(self, operands):
     # İlk operand register adı, ikinci operand ise data belleğindeki değişkenin adı olacak
      register_name  = operands[0]
@@ -179,6 +209,31 @@ class InstructionMemory(QObject):
         self.register_table_updated.emit(self.registers)
      else:
         print(f"Hata: {register_name} geçersiz bir register adı.")
+        
+        
+    def move(self, operands):
+    # İşlem için gerekli operandları al
+     source_register = operands[0].strip()  # Kaynak register $a0 
+     destination_register = operands[1].strip()  # Hedef register $$t2
+
+    # Kaynak register'dan veriyi al
+     if destination_register in self.registers:
+        value = self.registers[destination_register]
+     else:
+        print(f"Hata: {destination_register} adında bir register bulunamadı.")
+        return
+
+    # Hedef register'ı güncelle
+     if source_register in self.registers:
+        self.registers[source_register] = value
+        print(f"{source_register} register'ı {destination_register} register'ının değeriyle güncellendi.")
+       
+        self.update_register_table(self.registers)
+        self.register_table_updated.emit(self.registers)
+     else:
+        print(f"Hata: {source_register} geçersiz bir register adı.")
+
+
 
      
 

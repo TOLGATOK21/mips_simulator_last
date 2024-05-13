@@ -136,6 +136,7 @@ class Ui_MainWindow(object):
         self.instruction_memory.instruction_memory_updated.connect(self.update_table_instruction)
         self.update_table_instruction()
         self.instruction_memory.register_table_updated.connect(self.update_table_registers)
+       
         self.update_table_registers()
         
         
@@ -198,6 +199,7 @@ class Ui_MainWindow(object):
         self.textBrowser_output_run.setGeometry(QtCore.QRect(0, 0, 461, 211))
         self.textBrowser_output_run.setObjectName("textBrowser_output_run")
         self.mips_messages.addTab(self.tab_2, "")
+       
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(650, 100, 91, 16))
         self.label.setObjectName("label")
@@ -230,6 +232,8 @@ class Ui_MainWindow(object):
         self.resetButton.clicked.connect(self.reset_program)
        
         # stepButton'a tıklandığında next_step metodunu çağır
+        
+        self.textBrowser_output_run.setText(self.instruction_memory.syscall())
         
 
         
