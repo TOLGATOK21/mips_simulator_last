@@ -2,12 +2,14 @@ from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5 import QtWidgets
 
 class DataMemory(QObject):
-    memory_updated = pyqtSignal()
+    memory_updated = pyqtSignal(dict)
+    
     degiskenler = {}
     degisken_adresler = {}
 
     def __init__(self):
         super().__init__()
+        
         self.memory = {}  # Belleği depolamak için bir sözlük
         start_address = 0x10010000
         end_address = 0x10010400
@@ -25,11 +27,13 @@ class DataMemory(QObject):
     def update_memory(self, address, value):
     # Bellek adresindeki değeri güncelle
      if address in self.memory:
-        self.memory[address] = value
+        self.memory[address] = value  # Bellek adresinin değerini güncelle
         # Bellek güncellendiğinde sinyal gönder
-        self.memory_updated.emit()
+        self.memory_updated.emit(self.memory)
      else:
         print("Hata: Geçersiz bellek adresi.")
+
+
 
 
     def load_program(self, program):
@@ -42,7 +46,7 @@ class DataMemory(QObject):
         if address in self.memory:
             self.memory[address] = value
             # Bellek güncellendiğinde sinyal gönder
-            self.memory_updated.emit()
+            self.memory_updated.emit(self.memory)
         else:
             print("Hata: Geçersiz bellek adresi.")
 

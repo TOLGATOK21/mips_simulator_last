@@ -136,6 +136,19 @@ class InstructionMemory(QObject):
             self.syscall()
         elif opcode == 'move':
             self.move(operands)
+            
+        elif opcode == 'xor':
+            self.xor(operands)
+            
+        elif opcode == 'nor':
+            self.nor(operands)
+            
+        elif opcode == 'jr':
+            self.jr(operands)
+        elif opcode == 'andi':
+            self.andi(operands)
+        elif opcode == 'ori':
+            self.ori(operands)
         
         elif opcode == 'sub':
             self.sub(operands)
@@ -270,12 +283,15 @@ class InstructionMemory(QObject):
      else:
         print(f"Hata: {var_name} adında bir değişken bulunamadı.")
         return
+     self.data_memory.write_memory(address, value,var_name)
+     self.data_memory.memory_updated.emit(self.data_memory.memory)
+
     # Verinin güncellenmesi
      
 
 
     # Belleğe veriyi yaz
-     self.data_memory.update_memory(address, value)
+     
      print(f"{register_name} register'ındaki değer {var_name} değişkeninin adresindeki belleğe yazıldı.")
 
 
@@ -614,6 +630,83 @@ class InstructionMemory(QObject):
             print(f"Hata: {destination_register} geçersiz bir register adı.")
      else:
         print(f"Hata: {source_register} geçersiz bir register adı.")
+        
+    def xor(self, operands):
+     register_name_result = operands[0].strip()
+     register_name_1 = operands[1].strip()
+     register_name_2 = operands[2].strip()
+
+     if register_name_1 in self.registers and register_name_2 in self.registers:
+        value_1 = self.registers[register_name_1]
+        value_2 = self.registers[register_name_2]
+        result = value_1 ^ value_2
+        if register_name_result in self.registers:
+            self.registers[register_name_result] = result
+            print(f"{register_name_result} register'ına {register_name_1} ve {register_name_2} registerlarının XOR işlemi sonucu olan {result} değeri yazıldı.")
+        else:
+            print(f"Hata: {register_name_result} geçersiz bir register adı.")
+     else:
+        print("Hata: Geçersiz register adı.")
+
+    def nor(self, operands):
+     register_name_result = operands[0].strip()
+     register_name_1 = operands[1].strip()
+     register_name_2 = operands[2].strip()
+
+     if register_name_1 in self.registers and register_name_2 in self.registers:
+        value_1 = self.registers[register_name_1]
+        value_2 = self.registers[register_name_2]
+        result = ~(value_1 | value_2)
+        if register_name_result in self.registers:
+            self.registers[register_name_result] = result
+            print(f"{register_name_result} register'ına {register_name_1} ve {register_name_2} registerlarının NOR işlemi sonucu olan {result} değeri yazıldı.")
+        else:
+            print(f"Hata: {register_name_result} geçersiz bir register adı.")
+     else:
+        print("Hata: Geçersiz register adı.")
+
+    def jr(self, operands):
+     register_name = operands[0].strip()
+     if register_name in self.registers:
+        address = self.registers[register_name]
+        # Eğer işlemci kendi adresini değiştirirse burada adresi güncelle
+        # Örnek: self.program_counter = address
+        print(f"Program counter, {register_name} registerındaki adres ({address}) ile güncellendi.")
+     else:
+        print("Hata: Geçersiz register adı.")
+
+    def andi(self, operands):
+     register_name_result = operands[0].strip()
+     register_name_1 = operands[1].strip()
+     value = int(operands[2].strip())
+
+     if register_name_1 in self.registers:
+        value_1 = self.registers[register_name_1]
+        result = value_1 & value
+        if register_name_result in self.registers:
+            self.registers[register_name_result] = result
+            print(f"{register_name_result} register'ına {register_name_1} registerı ile {value} değerinin AND işlemi sonucu olan {result} değeri yazıldı.")
+        else:
+            print(f"Hata: {register_name_result} geçersiz bir register adı.")
+     else:
+        print("Hata: Geçersiz register adı.")
+
+    def ori(self, operands):
+     register_name_result = operands[0].strip()
+     register_name_1 = operands[1].strip()
+     value = int(operands[2].strip())
+
+     if register_name_1 in self.registers:
+        value_1 = self.registers[register_name_1]
+        result = value_1 | value
+        if register_name_result in self.registers:
+            self.registers[register_name_result] = result
+            print(f"{register_name_result} register'ına {register_name_1} registerı ile {value} değerinin OR işlemi sonucu olan {result} değeri yazıldı.")
+        else:
+            print(f"Hata: {register_name_result} geçersiz bir register adı.")
+     else:
+        print("Hata: Geçersiz register adı.")
+
      
     
     def loop(self, operands):
