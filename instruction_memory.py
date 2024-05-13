@@ -6,7 +6,9 @@ class InstructionMemory(QObject):
     instruction_memory_updated = pyqtSignal()
     data_memory= DataMemory()
     register_table_updated = pyqtSignal(dict)
-    output_of_code = {}
+    output_of_code = " "
+    output_of_code_changed = pyqtSignal(str)
+
 
    
 
@@ -161,6 +163,11 @@ class InstructionMemory(QObject):
 
      
      self.update_register_table(self.registers)
+     
+    def run(self):
+     while self.pc in self.memory:
+        self.next_step()
+
 
 
     def syscall(self):
@@ -172,7 +179,8 @@ class InstructionMemory(QObject):
         
         if syscall_number == 1:  # Print integer
             # Yazdırılacak değer $a0 registerında bulunur.
-            self.output_of_code["Output:"] = self.registers["$a0"]
+            self.output_of_code = str(self.output_of_code) + str(self.registers["$a0"])
+            self.output_of_code_changed.emit(self.output_of_code)
             return print(str(self.output_of_code))
          
             
@@ -412,14 +420,15 @@ class InstructionMemory(QObject):
         # Değerleri çarp
         result = value_1 * value_2
 
-        # Sonucu ilk registera yaz
-        if register_name_result in self.registers:
-            self.registers[register_name_result] = result
-            print(f"{register_name_result} register'ına {register_name_1} ve {register_name_2} registerlarının çarpımı olan {result} değeri yazıldı.")
-        else:
-            print(f"Hata: {register_name_result} geçersiz bir register adı.")
+        # Sonucu "hi" ve "lo" registerlarına kaydet
+        self.registers['hi'] = (result >> 32) & 0xFFFFFFFF
+        self.registers['lo'] = result & 0xFFFFFFFF
+        self.registers[register_name_result] = result
+
+        print(f"Çarpım sonucu 'hi' registerına yüksek 32 bit ve 'lo' registerına düşük 32 bit olarak kaydedildi.")
      else:
         print("Hata: Geçersiz register adı.")
+
 
     def div(self, operands):
     # Gerekli operandları al
@@ -435,17 +444,14 @@ class InstructionMemory(QObject):
         quotient = value_1 // value_2
         remainder = value_1 % value_2
 
-        # Sonuçları ilgili registerlara yaz
-        if "$hi" in self.registers:
-            self.registers["$hi"] = remainder
-        else:
-            print("Hata: $hi geçersiz bir register adı.")
-        if "$lo" in self.registers:
-            self.registers["$lo"] = quotient
-        else:
-            print("Hata: $lo geçersiz bir register adı.")
+        # Sonuçları "hi" ve "lo" registerlarına yaz
+        self.registers['hi'] = remainder
+        self.registers['lo'] = quotient
+
+        print(f"Bölme işlemi sonucu 'hi' registerına kalan, 'lo' registerına bölüm olarak kaydedildi.")
      else:
         print("Hata: Geçersiz register adı.")
+
     
     def jump(self, operands):
         label = operands[0].strip()

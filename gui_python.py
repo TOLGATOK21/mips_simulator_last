@@ -3,6 +3,8 @@ from data_memory import DataMemory
 from instruction_memory import InstructionMemory
 from PyQt5.QtCore import QObject, pyqtSignal
 import traceback
+from PyQt5.QtWidgets import QFileDialog
+
 
 
 
@@ -150,6 +152,10 @@ class Ui_MainWindow(object):
         self.textBrowser_output = QtWidgets.QTextBrowser(self.tab)
         self.textBrowser_output.setGeometry(QtCore.QRect(0, 0, 461, 211))
         self.textBrowser_output.setObjectName("textBrowser_output")
+       
+        
+       
+
       
 
         
@@ -183,6 +189,8 @@ class Ui_MainWindow(object):
         self.pushButton.clicked.connect(self.toggle_theme)
         self.runButton.clicked.connect(self.data_process)
         self.stepButton.clicked.connect(self.instruction_memory.next_step)
+        self.assembleButton.clicked.connect(self.instruction_memory.run)
+        self.saveButton.clicked.connect(self.save_text)
        
         
         
@@ -196,9 +204,15 @@ class Ui_MainWindow(object):
         
         self.textBrowser_output_run.setText(self.instruction_memory.syscall())
         
-
+        self.instruction_memory.output_of_code_changed.connect(self.add_output)
+        self.add_output()
+        
+        
         
 
+        
+    def add_output(self):
+         self.textBrowser_output_run.append(str(self.instruction_memory.output_of_code))
         
     def data_process(self):
      data_lines = []
@@ -388,6 +402,18 @@ class Ui_MainWindow(object):
             app.setStyleSheet("")
         else:
             app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+            
+    def save_text(self):
+    # Girilen metni al
+     text = self.code_input.text()
+
+    # Metni bir dosyaya kaydet
+     file_name, _ = QFileDialog.getSaveFileName(self.centralwidget, "Save File", "", "Text Files (*.txt);;All Files (*)")
+
+     if file_name:
+        with open(file_name, 'w') as file:
+            file.write(text)
+
             
   
 
