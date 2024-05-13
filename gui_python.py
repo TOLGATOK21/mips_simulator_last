@@ -14,30 +14,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         #Diğer sınıflardan nesneler burda.
         self.data_memory = DataMemory()
-        self.instruction_memory =InstructionMemory() 
-      
-        
-        
-        
-        #NOT: İNSTRUCTİON MEMORY TABLOSU DOLDURULUP TABLOYU GÜNCELLEMEYE ÇALIŞILACAK 
-        #FONKSİYONLAR HAZIR SADECE İNSTRUCŞTON MEMORY TABLOSU GÜNCELLENMİYOR 
-        
-        
-
-        
-        
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
-       
-        
+        self.instruction_memory =InstructionMemory()  
         #--------------------------------
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1332, 779)
@@ -107,7 +84,6 @@ class Ui_MainWindow(object):
         self.update_table()
        
         #-----------INSTRUCTION TABLE------------------------------------------------------
-        
         self.instruction_memory_table = QtWidgets.QTableWidget(self.tab_memory)
         self.instruction_memory_table.setGeometry(QtCore.QRect(0, 350, 351, 251))
         self.instruction_memory_table.setObjectName("instruction_memory_table")
@@ -137,15 +113,7 @@ class Ui_MainWindow(object):
         self.update_table_instruction()
         self.instruction_memory.register_table_updated.connect(self.update_table_registers)
        
-        self.update_table_registers()
-        
-        
-        
-        
-        
-        
-        
-        
+        self.update_table_registers() 
         self.label_3 = QtWidgets.QLabel(self.tab_memory)
         self.label_3.setGeometry(QtCore.QRect(110, 320, 141, 20))
         self.label_3.setObjectName("label_3")
@@ -174,16 +142,9 @@ class Ui_MainWindow(object):
         self.code_input.setToolTip("")
         self.code_input.setWhatsThis("")
         self.code_input.setObjectName("code_input")
-        
-        
-
-        
         self.mips_messages = QtWidgets.QTabWidget(self.centralwidget)
         self.mips_messages.setGeometry(QtCore.QRect(450, 470, 471, 241))
         self.mips_messages.setObjectName("mips_messages")
-        
-     
-        
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
         self.textBrowser_output = QtWidgets.QTextBrowser(self.tab)
