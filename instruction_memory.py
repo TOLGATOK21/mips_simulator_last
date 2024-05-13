@@ -108,6 +108,8 @@ class InstructionMemory(QObject):
             self.set_less_than_immediate(operands)
         elif opcode == 'mul':
             self.mul(operands)
+        elif opcode == 'mult':
+            self.mul(operands)
         elif opcode == 'div':
             self.div(operands)
         elif opcode == 'j':
@@ -422,7 +424,7 @@ class InstructionMemory(QObject):
      else:
         print("Hata: Geçersiz register adı.")    
      
-    def mul(self, operands):
+    def mult(self, operands):
     # Gerekli operandları al
      register_name_result = operands[0].strip()
      register_name_1 = operands[1].strip()
@@ -442,6 +444,28 @@ class InstructionMemory(QObject):
         self.registers[register_name_result] = result
 
         print(f"Çarpım sonucu 'hi' registerına yüksek 32 bit ve 'lo' registerına düşük 32 bit olarak kaydedildi.")
+     else:
+        print("Hata: Geçersiz register adı.")
+        
+    def mul(self, operands):
+     register_name_result = operands[0].strip()
+     register_name_1 = operands[1].strip()
+     register_name_2 = operands[2].strip()
+
+    # İlk iki registerdan değerleri al
+     if register_name_1 in self.registers and register_name_2 in self.registers:
+        value_1 = self.registers[register_name_1]
+        value_2 = self.registers[register_name_2]
+        
+        # Değerleri çarp
+        result = value_1 * value_2
+        
+        # Sonucu ilk registera yaz
+        if register_name_result in self.registers:
+            self.registers[register_name_result] = result
+            print(f"{register_name_result} register'ına {register_name_1} ve {register_name_2} registerlarının çarpımı olan {result} değeri yazıldı.")
+        else:
+            print(f"Hata: {register_name_result} geçersiz bir register adı.")
      else:
         print("Hata: Geçersiz register adı.")
 
