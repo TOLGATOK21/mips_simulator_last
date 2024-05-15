@@ -4,88 +4,67 @@ import sys
 
 class InstructionMemory(QObject):
     instruction_memory_updated = pyqtSignal()
-    data_memory= DataMemory()
+    data_memory = DataMemory()
     register_table_updated = pyqtSignal(dict)
     output_of_code = " "
     output_of_code_changed = pyqtSignal(str)
 
-
-   
-
     def __init__(self):
         super().__init__()
         self.memory = {}
-        self.next_address = 0x00400000 
-        self.pc = 0x00400000 
+        self.next_address = 0x00400000
+        self.pc = 0x00400000
         self.loop_addresses = {}
-       
-        
 
     def load_program(self, program):
-    
-     for instruction in program:
-        opcode = instruction[0].strip()
-        operands = instruction[1:]
-
-        if self.next_address in self.memory:
-            print("Hata: Bu adreste zaten bir komut var.")
-            continue
-
-       
-        if opcode.endswith(':'):
-            
-            label = opcode[:-1]
-           
-            self.loop_addresses[label] = self.next_address
-           
-            opcode = instruction[0]
+        for instruction in program:
+            opcode = instruction[0].strip()
             operands = instruction[1:]
+            machine_code = self.convert_to_machine_code(opcode, operands)
 
-        
-        self.memory[self.next_address] = {'opcode': opcode, 'operands': operands}
-        
-       
-        self.next_address += 4
-        print(self.loop_addresses)
+            if self.next_address in self.memory:
+                print("Hata: Bu adreste zaten bir komut var.")
+                continue
 
+            if opcode.endswith(':'):
+                label = opcode[:-1]
+                self.loop_addresses[label] = self.next_address
+                opcode = instruction[0]
+                operands = instruction[1:]
 
-    def read_instruction(self, address):
-        """
-        Belirtilen adresteki komutu oku.
-        """
-        if address in self.memory:
-            return self.memory[address]
-        else:
-            print("Hata: Geçersiz adres")
-            return None
+            self.memory[self.next_address] = {'machine_code': machine_code, 'opcode': opcode, 'operands': operands}
+
+            self.next_address += 4
+            print(self.loop_addresses)
+
+    def convert_to_machine_code(self, opcode, operands):
+        # Burada assembly komutlarına göre makine kodunu üretmek için gerekli mantığı ekleyin
+        # Örnek olarak sabit bir makine kodu (123456) döndürüyorum:
+        return 123456
 
     def process_text_section(self, text):
-    
-     rows = text.split('\n')
-     program = []
+        rows = text.split('\n')
+        program = []
 
-     for row in rows:
-        row = row.strip() 
-        if not row:  
-            continue
-        
-        
-        parts = row.split(' ', 1)
-        opcode, rest = parts[0], parts[1] if len(parts) > 1 else ''
-    
-       
-        operands = rest.split(',') if rest else []
+        for row in rows:
+            row = row.strip()
+            if not row:
+                continue
 
-        
-        program.append((opcode, *operands))
-        
-    
+            parts = row.split(' ', 1)
+            opcode, rest = parts[0], parts[1] if len(parts) > 1 else ''
+
+            operands = rest.split(',') if rest else []
+
+            program.append((opcode, *operands))
+
         self.load_program(program)
         print(f"Address: {self.next_address}, Program: {program}")
-    
-    
+
         self.instruction_memory_updated.emit()
-        
+
+    # Diğer metodlar burada
+
     def next_step(self):
      if self.pc in self.memory:
         instruction = self.memory[self.pc]
