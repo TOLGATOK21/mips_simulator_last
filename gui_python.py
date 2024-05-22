@@ -279,8 +279,9 @@ class Ui_MainWindow(object):
         for address, instruction in self.instruction_memory.memory.items():
             opcode = instruction['opcode']
             operands = instruction['operands']
+            machine_code = instruction['machine_code']
             item_address = QtWidgets.QTableWidgetItem(format(address, '#010x')) 
-            item_value = QtWidgets.QTableWidgetItem("0x0000000")  
+            item_value = QtWidgets.QTableWidgetItem(f"{machine_code}")  
             item_source = QtWidgets.QTableWidgetItem(f"{opcode} {operands}")
             item_type = QtWidgets.QTableWidgetItem(f"{opcode}")
             self.instruction_memory_table.setItem(row, 0, item_address)

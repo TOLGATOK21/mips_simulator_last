@@ -38,9 +38,24 @@ class InstructionMemory(QObject):
             print(self.loop_addresses)
 
     def convert_to_machine_code(self, opcode, operands):
-        # Burada assembly komutlarına göre makine kodunu üretmek için gerekli mantığı ekleyin
-        # Örnek olarak sabit bir makine kodu (123456) döndürüyorum:
-        return 123456
+    # Separate the opcode and operands
+     print("BURASI CONVERT MACHİNE ", opcode) 
+     print("BURASI CONVERT MACHİNE OPERANDS" ,operands)
+     if opcode not in self.opcode_binary:
+         return "0x00000000"
+     
+     
+     elif opcode in self.opcode_binary:
+        opcode_binary = self.opcode_binary[opcode]
+        return opcode_binary
+     
+
+    # Combine the opcode and operands into machine code
+     
+
+     
+ 
+ 
 
     def process_text_section(self, text):
         rows = text.split('\n')
@@ -753,6 +768,43 @@ class InstructionMemory(QObject):
             "hi": 0x00000000,
             "lo": 0x00000000,
         }
+    
+    
+    opcode_binary = {
+         "lw": "35 0000 0000",  # Load word
+    "sw": "2B 0000 0000",  # Store word
+    "add": "00 0000 0000",  # Add
+    "and": "00 0000 0000",  # Bitwise and
+    "or": "00 0000 0000",  # Bitwise or
+    "slt": "00 0000 0000",  # Set on less than
+    "slti": "00 0000 0000",  # Set on less than immediate
+    "mul": "00 0000 0000",  # Multiply
+    "mult": "00 0000 0000",  # Multiply unsigned
+    "div": "00 0000 0000",  # Divide
+    "j": "00 0000 0000",  # Jump
+    "jal": "00 0000 0000",  # Jump and link
+    "beq": "04 0000 0000",  # Branch on equal
+    "bne": "05 0000 0000",  # Branch on not equal
+    "blt": "04 0000 0000",  # Branch on less than
+    "bgt": "05 0000 0000",  # Branch on greater than
+    "ble": "04 0000 0000",  # Branch on less than or equal
+    "bge": "05 0000 0000",  # Branch on greater than or equal
+    "li": "3C 0000 0000",  # Load immediate
+    "addi": "00 0000 0000",  # Add immediate
+    "subi": "00 0000 0000",  # Subtract immediate
+    "syscall": "00 0000 0000",  # System call
+    "move": "00 0000 0000",  # Move
+    "xor": "00 0000 0000",  # Bitwise exclusive-or
+    "nor": "00 0000 0000",  # Bitwise not-or
+    "jr": "00 0000 0000",  # Jump register
+    "andi": "00 0000 0000",  # Bitwise and immediate
+    "ori": "00 0000 0000",  # Bitwise or immediate
+    "sub": "00 0000 0000",  # Subtract
+    "and": "00 0000 0000",  # Bitwise and
+        
+        
+        
+    }
     
 
     def update_register_table(self, updated_registers):
