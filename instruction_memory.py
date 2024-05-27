@@ -88,6 +88,8 @@ class InstructionMemory(QObject):
         
         if opcode == 'lw':
             self.lw(operands)
+        elif opcode =='ns':
+            self.enes(operands)
         elif opcode == 'sw':
             self.sw(operands)
         elif opcode == 'add':
@@ -103,17 +105,17 @@ class InstructionMemory(QObject):
         elif opcode == 'mul':
             self.mul(operands)
         elif opcode == 'mult':
-            self.mul(operands)
+            self.mult(operands)
         elif opcode == 'div':
             self.div(operands)
         elif opcode == 'j':
             self.jump(operands)
         elif opcode == 'jal':
-            self.jump(operands)
+            self.jal(operands)
         elif opcode == 'beq':
             self.beq(operands)
         elif opcode == 'bne':
-            self.blt(operands)
+            self.bne(operands)
         elif opcode == 'blt':
             self.blt(operands)
         elif opcode == 'bgt':
@@ -150,7 +152,16 @@ class InstructionMemory(QObject):
             self.sub(operands)
         elif opcode == 'and':
             self.logical_and(operands)
-        
+        elif opcode == 'sll':
+            self.sll(operands)
+        elif opcode == 'srl':
+            self.srl(operands)
+        elif opcode == 'sra':
+            self.sra(operands)
+        elif opcode == 'mflo':
+            self.mflo(operands)
+        elif opcode == 'mfhi':
+            self.mfhi(operands)
         
         
         
@@ -346,6 +357,7 @@ class InstructionMemory(QObject):
         
        
         result = value_1 & value_2
+
         
         if register_name_result in self.registers:
             self.registers[register_name_result] = result
@@ -418,27 +430,43 @@ class InstructionMemory(QObject):
         print("Hata: Geçersiz register adı.")    
      
     def mult(self, operands):
-    
      register_name_result = operands[0].strip()
      register_name_1 = operands[1].strip()
      register_name_2 = operands[2].strip()
 
-   
      if register_name_1 in self.registers and register_name_2 in self.registers:
         value_1 = self.registers[register_name_1]
         value_2 = self.registers[register_name_2]
 
-        
         result = value_1 * value_2
 
        
         self.registers['hi'] = (result >> 32) & 0xFFFFFFFF
         self.registers['lo'] = result & 0xFFFFFFFF
+
+  
         self.registers[register_name_result] = result
 
-        print(f"Çarpım sonucu 'hi' registerına yüksek 32 bit ve 'lo' registerına düşük 32 bit olarak kaydedildi.")
+        print("Çarpım sonucu 'hi' registerına yüksek 32 bit ve 'lo' registerına düşük 32 bit olarak kaydedildi.")
      else:
         print("Hata: Geçersiz register adı.")
+        
+    def mfhi(self, operands):
+     register_name = operands[0].strip()
+     if register_name in self.registers:
+        self.registers[register_name] = self.registers['hi']
+        print(f"'hi' registerının değeri {register_name} registerına kopyalandı.")
+     else:
+        print("Hata: Geçersiz register adı.")
+
+    def mflo(self, operands):
+     register_name = operands[0].strip()
+     if register_name in self.registers:
+        self.registers[register_name] = self.registers['lo']
+        print(f"'lo' registerının değeri {register_name} registerına kopyalandı.")
+     else:
+        print("Hata: Geçersiz register adı.")
+
         
     def mul(self, operands):
      register_name_result = operands[0].strip()
@@ -461,6 +489,67 @@ class InstructionMemory(QObject):
             print(f"Hata: {register_name_result} geçersiz bir register adı.")
      else:
         print("Hata: Geçersiz register adı.")
+        
+        
+    def sll(self, operands):
+     register_name_result = operands[0].strip()
+     register_name_1 = operands[1].strip()
+     shift_amount = operands[2].strip()  # Doğrudan kullanıyoruz, tamsayıya dönüştürmeye gerek yok
+    
+     if register_name_1 in self.registers:
+        value_1 = self.registers[register_name_1]
+        
+        result = value_1 << int(shift_amount)  # Shift miktarını burada tamsayıya dönüştürüyoruz
+        
+        if register_name_result in self.registers:
+            self.registers[register_name_result] = result
+            print(f"{register_name_result} register'ına {register_name_1} register'ının {shift_amount} bit sola kaydırılması sonucu olan {result} değeri yazıldı.")
+        else:
+            print(f"Hata: {register_name_result} geçersiz bir register adı.")
+     else:
+        print("Hata: Geçersiz register adı.")
+
+
+    def srl(self, operands):
+     register_name_result = operands[0].strip()
+     register_name_1 = operands[1].strip()
+     shift_amount = int(operands[2].strip())
+    
+     if register_name_1 in self.registers:
+        value_1 = self.registers[register_name_1]
+        
+        result = value_1 >> shift_amount
+        
+        if register_name_result in self.registers:
+            self.registers[register_name_result] = result
+            print(f"{register_name_result} register'ına {register_name_1} register'ının {shift_amount} bit sağa kaydırılması sonucu olan {result} değeri yazıldı.")
+        else:
+            print(f"Hata: {register_name_result} geçersiz bir register adı.")
+     else:
+        print("Hata: Geçersiz register adı.")
+
+    def sra(self, operands):
+     register_name_result = operands[0].strip()
+     register_name_1 = operands[1].strip()
+     shift_amount = int(operands[2].strip())
+    
+     if register_name_1 in self.registers:
+        value_1 = self.registers[register_name_1]
+        
+       
+        if value_1 < 0:
+            result = -(abs(value_1) >> shift_amount)
+        else:
+            result = value_1 >> shift_amount
+        
+        if register_name_result in self.registers:
+            self.registers[register_name_result] = result
+            print(f"{register_name_result} register'ına {register_name_1} register'ının {shift_amount} bit işareti koruyarak sağa kaydırılması sonucu olan {result} değeri yazıldı.")
+        else:
+            print(f"Hata: {register_name_result} geçersiz bir register adı.")
+     else:
+        print("Hata: Geçersiz register adı.")
+
 
 
     def div(self, operands):
@@ -496,18 +585,15 @@ class InstructionMemory(QObject):
         else:
             print(f"Hata: {label} etiketi tanımlanmamış.")
 
-    def jump_and_link(self, operands):
-        label = operands[0].strip()
-        return_address_register = operands[1]
-        
-   
-        if label in self.loop_addresses:
-            address = self.loop_addresses[label]
-            self.pc = address
-     
-            self.registers[return_address_register] = self.pc + 4
-        else:
-            print(f"Hata: {label} etiketi tanımlanmamış.")
+    def jal(self, operands):
+     label = operands[0].strip()  # Hedef etiketi al
+     return_address = self.pc   # Dönüş adresini hesapla
+     self.registers['$ra'] = return_address  # Dönüş adresini $ra registerına kaydet
+     if label in self.loop_addresses:
+        self.pc = self.loop_addresses[label]  # Hedef etikete atla
+     else:
+        print(f"Hata: {label} etiketi tanımlanmamış.")
+
 
     def beq(self, operands):
         register1 = operands[0]
@@ -524,8 +610,8 @@ class InstructionMemory(QObject):
             print(f"Hata: {label} etiketi tanımlanmamış.")
 
     def bne(self, operands):
-        register1 = operands[0]
-        register2 = operands[1]
+        register1 = operands[0].strip()
+        register2 = operands[1].strip()
         label = operands[2].strip() 
         
         
@@ -548,8 +634,8 @@ class InstructionMemory(QObject):
             label_address = self.loop_addresses[label]
             
             
-            if self.registers[register1] < self.registers[register2]:
-                self.pc = label_address
+            #if self.registers[register1].strip() < self.registers[register2]:
+                #self.pc = label_address
         else:
             print(f"Hata: {label} etiketi tanımlanmamış.")
 
@@ -688,6 +774,24 @@ class InstructionMemory(QObject):
         print(f"Program counter, {register_name} registerındaki adres ({address}) ile güncellendi.")
      else:
         print("Hata: Geçersiz register adı.")
+     if '$ra' in self.registers:
+        return_address = self.registers['$ra']
+        self.pc = return_address
+        print(f"Program counter, $ra registerındaki adres ({return_address}) ile güncellendi.")
+        
+        
+    def enes(self, operands):
+        result_register = operands[0]
+        register1= operands[1].strip()
+        register2 = operands[2].strip()
+        
+        result = (self.registers[register1] * 4) + (self.registers[register2] * 4)
+        self.registers[result_register] = result
+        print({result_register},    "registerının değeri : " , {result})
+        
+        
+     
+
 
     def andi(self, operands):
      register_name_result = operands[0].strip()
